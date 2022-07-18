@@ -1,0 +1,6 @@
+ps -A | tail -n +3 | wc --lines
+mkdir 'MMS C camp' && cp *.c ./'MMS C camp'/ && rm [[:digit:]]*
+chmod u=rwx,g=rx,o=r $HOME/Desktop/testFile
+cat source1.c source2.c | wc --lines > lineCount
+find . -name *.c | wc --lines
+find . -name *.c -exec cat {} + | wc --lines
