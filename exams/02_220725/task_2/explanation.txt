@@ -1,0 +1,39 @@
+gcc -E main.c -DCOUNT=10 -DMAX=10 -DMIN=-10 -o main.i
+gcc -E comparators.c -o comparators.i
+
+gcc използва cpp препроцесора. По време на тази стъпка
+единствено препроцесорните директиви се изпълняват
+например #include копира целия текст от един файл в друг
+създават се дефиниции (#define) и могат да се правят проверки
+(#if), които включват/изключват част от файла 
+
+gcc -S main.i -o main.S
+gcc -S comparators.i -o comparators.S
+
+след изпълнението на препроцесора, компилаторът превежда
+кода до асемблер
+
+gcc -c main.S -o main.o
+gcc -c comparators.S -o comparators.o
+
+инструкциите от асемблера се превеждът в машиния им еквивалент (0 и 1ци)
+
+gcc main.o comparators.o -o program
+
+използвайки ld, gcc статично свързва двата обектни файла в изпълним обектен файл -> program
+
+ar rcs libcomparatorlib.a comparators.o
+
+статичните библиотеки представляват архив от обектни файлове
+задължително трябва да започват с "lib"
+
+gcc main.o -L . -l comparatorlib -o static_program
+main.o се свързва със статична библиотека
+
+за създаване на динамична библиотека се използва position independant флаг при създаването на
+обектен файл
+gcc -fPIC -c comparators.c -o dynamic_comparators.o
+gcc -shared -o libdcomparatorlib.so dynamic_comparators.o
+
+gcc main.o -L . -l dcomparatorlib -o dynamic_program
+
