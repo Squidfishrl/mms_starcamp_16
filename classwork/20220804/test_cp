@@ -1,0 +1,6 @@
+xxd / ghex -> create hexdump
+xxd -b -c 1 <file>
+xxd -g 1 <file> 
+
+-g - groups of bytes
+-c columns
