@@ -1,0 +1,34 @@
+# spelling mistake DIR should be IDIR ??
+DIR =../include
+CC=gcc
+CFLAGS=-I$(IDIR)
+
+ODIR=obj
+LDIR =../lib
+
+LIBS=-lm
+
+_DEPS = hellomake.h
+# $(_DEPS) is the variable which is referred to by %
+# so $(_DEPS) is replaced by $(IDIR)/$(_DEPS)
+# DEPS = -I../include/hellomake.h
+DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
+
+_OBJ = hellomake.o hellofunc.o 
+# OBJ = obj/hellomake.o obj/hellofunc.o
+OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
+
+
+# equivelant to explanations in 0501:
+$(ODIR)/%.o: %.c $(DEPS)
+    $(CC) -c -o $@ $< $(CFLAGS)
+
+hellomake: $(OBJ)
+    $(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+.PHONY: clean
+
+clean:
+    # rm *~ should give an error ?
+    rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~
+

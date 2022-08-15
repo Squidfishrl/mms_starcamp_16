@@ -1,0 +1,4 @@
+pipes
+signals
+shared memory
+message queues

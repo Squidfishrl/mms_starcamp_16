@@ -1,0 +1,24 @@
+CC=gcc
+
+# src contains all files ending in .c
+src = $(wildcard *.c)
+
+# obj contains all the files in src except they end in .o rather than .c
+obj = $(src:.c=.o)
+
+LDFLAGS = -lGL -lglut -lpng -lz -lm
+
+myprog: $(obj) # all object files are dependancies to the target myprog
+    $(CC) -o $@ $^ $(LDFLAGS)
+    # turns into:
+    # gcc -o myprog <all dependancies> -lGl -lglut -lpng -lz -lm
+
+%.o: %.c  # % acts as a wild card and it's equivelant to creating a new target for every .o file
+    $(CC) -o $@ -c $<
+    # gcc -o <wildcard>.o -c <first dependancy>.c
+
+.PHONY: clean  # clean can only be invoked as a target `make clean`. If there's a file called clean, updating it doesn't result in executing the target
+clean:
+    rm -f $(obj) myprog
+    # all object files in obj and the myprog executable are removed
+

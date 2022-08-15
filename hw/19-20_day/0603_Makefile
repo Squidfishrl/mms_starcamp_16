@@ -1,0 +1,30 @@
+# my makefile
+CC=clang
+CFLAGS=-lm -pthread
+OBJS = main.o sum.o mult.o div.o sub.o
+
+.PHONY: all
+all: program
+
+program: $(OBJS)
+    $(CC) $^ -o $@ $(CFLAGS)
+
+%.o: %.c
+    $(CC) -c $< -o $@
+
+.PHONY: clean
+clean:
+    rm -rf *.o program
+
+# when make is called
+# first the wildcard target is executed with all of the $(OBJS) files
+# main.o: main.c
+#   clang -c main.c -o main.o
+# sum.o: sum.c 
+#   clang -c sum.c -o sum.o
+# etc..
+#
+# once that is done the following is executed
+# program: main.o sum.o mult.o div.o sub.o
+#   clang main.o sum.o mult.o div.o sub.o -o program -lm -pthread
+# program is a dependancy of all, which is the topmost target, therefor is executed when make is called (`make` == `make all`)

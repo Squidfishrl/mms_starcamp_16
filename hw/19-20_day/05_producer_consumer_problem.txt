@@ -1,0 +1,7 @@
+It's mainly used for multi-process/multi-thread synchronisation
+when there's a bounded buffer (with fixed size). Producers
+shouldn't produce when the buffer is full and the consumers
+shouldn't consume when the buffer is empty. When the buffer is
+full, the producer processes/threads are blocked, which is more 
+efficient than having to constnatly check the buffer size. When 
+the buffer is empty, the consumer processes/threads are blocked
