@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <limits.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <sys/wait.h>
 
@@ -18,6 +19,8 @@ int main (int argc, char *argv[])
         argv++;
         argc--;
 
+        pid_t pids[argc];
+
         for (int i = 0; i < argc; i++) {
                 int pid = fork();
 
@@ -28,30 +31,42 @@ int main (int argc, char *argv[])
 
                 if (0 == pid) {
                         // child
-                        if (print_file_bin_ones(*(argv+i)) == EXIT_FAILURE) {
+                        int ones_cnt;
+                        if ((ones_cnt = print_file_bin_ones(*(argv+i))) == EXIT_FAILURE) {
                                 perror("print_file_bin_ones");
                                 exit(EXIT_FAILURE);
                         }
 
-                        exit(EXIT_SUCCESS);
+                        return ones_cnt;
+                } else {
+                        // parent
+                        pids[i] = pid;
                 }
         }
 
-        int wstatus;
-        if (wait(&wstatus) == -1) {
-                perror("wait");
-                return EXIT_FAILURE;
+        int total_ones = 0;
+        for (int i = 0; i < argc; i++) {
+                int wstatus;
+                if (waitpid(pids[i], &wstatus, 0) == -1) {
+                        perror("waitpid");
+                        return EXIT_FAILURE;
+                }
+
+                if (!WIFEXITED(wstatus)) {
+                        fprintf(stderr, "child process %d terminatation error\n", pids[i]);
+                        return EXIT_FAILURE;
+                }
+
+                if (WEXITSTATUS(wstatus) == EXIT_FAILURE) {
+                        fprintf(stderr, "child processes %d encountered a print_file_bin_ones error", pids[i]);
+                        return EXIT_FAILURE;
+                }
+                
+                // no idea why WEXITSTATUS doesn't return the return value of the child process here
+                total_ones += WEXITSTATUS(wstatus);
         }
 
-        if (!WIFEXITED(wstatus)) {
-                fprintf(stderr, "child process terminatation error\n");
-                return EXIT_FAILURE;
-        }
-
-        if (WEXITSTATUS(wstatus) == EXIT_FAILURE) {
-                fprintf(stderr, "print_file_bin_ones error");
-                return EXIT_FAILURE;
-        }
+        printf("Total ones: %d\n", total_ones);
 
         return EXIT_SUCCESS;
 }
@@ -79,7 +94,7 @@ int print_file_bin_ones(void *args)
 
         printf("%s - %d\n", fname, ones_cnt);
 
-        return EXIT_SUCCESS;
+        return ones_cnt;
 }
 
 uint8_t int32_bin_ones(uint32_t num)

@@ -7,6 +7,9 @@
 void *print_file_bin_ones(void *args);
 uint8_t int32_bin_ones(uint32_t num);
 
+int total_ones = 0;
+pthread_mutex_t ones_sum_lock;
+
 int main (int argc, char *argv[])
 {
         if (1 == argc) {
@@ -18,6 +21,11 @@ int main (int argc, char *argv[])
 
         argv++;
         argc--;
+
+        if (pthread_mutex_init(&ones_sum_lock, NULL)) {
+                perror("pthread_mutex_init");
+                return EXIT_FAILURE;
+        }
 
         for (int i = 0; i < argc; i++) {
                 if (pthread_create(threads+i, NULL, print_file_bin_ones, *(argv+i))) {
@@ -37,6 +45,13 @@ int main (int argc, char *argv[])
                         perror("print_file_bin_ones");
                         return EXIT_FAILURE;
                 }
+        }
+
+        printf("Total ones: %d\n", total_ones);
+
+        if (pthread_mutex_destroy(&ones_sum_lock)) {
+                perror("pthread_mutex_destroy");
+                return EXIT_FAILURE;
         }
 
         return EXIT_SUCCESS;
@@ -65,7 +80,17 @@ void *print_file_bin_ones(void *args)
 
         printf("%s - %d\n", fname, ones_cnt);
 
-        pthread_exit(NULL);
+        if (pthread_mutex_lock(&ones_sum_lock)) {
+                perror("pthread_mutex_lock");
+                pthread_exit((void *)EXIT_FAILURE);
+        }
+        total_ones += ones_cnt;
+        if (pthread_mutex_unlock(&ones_sum_lock)) {
+                perror("pthread_mutex_unlock");
+                pthread_exit((void *)EXIT_FAILURE);
+        }
+
+        pthread_exit(EXIT_SUCCESS);
 }
 
 uint8_t int32_bin_ones(uint32_t num)
